@@ -436,7 +436,7 @@ class RobotUI(object):
                 self.label_robot_mode["text"] = LABEL_ROBOT_MODE[a["robot_mode"][0]]
                 self.label_di_input["text"] = bin(a["digital_input_bits"][0])[
                     2:].rjust(64, '0')
-                self.label_di_output["text"] = bin(a["digital_output_bits"][0])[
+                self.label_di_output["text"] = bin(a["digital_outputs"][0])[
                     2:].rjust(64, '0')
 
                 # Refresh coordinate points

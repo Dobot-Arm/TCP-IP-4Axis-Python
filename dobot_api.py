@@ -3,115 +3,103 @@ from threading import Timer
 from tkinter import Text, END
 import datetime
 import numpy as np
+import os
+import json
+
+alarmControllerFile="files/alarm_controller.json"
+alarmServoFile="files/alarm_servo.json"
 
 # Port Feedback
-MyType = np.dtype([(
-    'len',
-    np.int64,
-), (
-    'digital_input_bits',
-    np.uint64,
-), (
-    'digital_output_bits',
-    np.uint64,
-), (
-    'robot_mode',
-    np.uint64,
-), (
-    'time_stamp',
-    np.uint64,
-), (
-    'time_stamp_reserve_bit',
-    np.uint64,
-), (
-    'test_value',
-    np.uint64,
-), (
-    'test_value_keep_bit',
-    np.float64,
-), (
-    'speed_scaling',
-    np.float64,
-), (
-    'linear_momentum_norm',
-    np.float64,
-), (
-    'v_main',
-    np.float64,
-), (
-    'v_robot',
-    np.float64,
-), (
-    'i_robot',
-    np.float64,
-), (
-    'i_robot_keep_bit1',
-    np.float64,
-), (
-    'i_robot_keep_bit2',
-    np.float64,
-), ('tool_accelerometer_values', np.float64, (3, )),
-    ('elbow_position', np.float64, (3, )),
-    ('elbow_velocity', np.float64, (3, )),
-    ('q_target', np.float64, (6, )),
-    ('qd_target', np.float64, (6, )),
-    ('qdd_target', np.float64, (6, )),
-    ('i_target', np.float64, (6, )),
-    ('m_target', np.float64, (6, )),
-    ('q_actual', np.float64, (6, )),
-    ('qd_actual', np.float64, (6, )),
-    ('i_actual', np.float64, (6, )),
-    ('actual_TCP_force', np.float64, (6, )),
-    ('tool_vector_actual', np.float64, (6, )),
-    ('TCP_speed_actual', np.float64, (6, )),
-    ('TCP_force', np.float64, (6, )),
-    ('Tool_vector_target', np.float64, (6, )),
-    ('TCP_speed_target', np.float64, (6, )),
-    ('motor_temperatures', np.float64, (6, )),
-    ('joint_modes', np.float64, (6, )),
-    ('v_actual', np.float64, (6, )),
-    ('dummy', np.float64, (9, 6))])
-# ('hand_type', np.char, (4, )),
-# ('user', np.char,),
-# ('tool', np.char,),
-# ('run_queued_cmd', np.char,),
-# ('pause_cmd_flag', np.char,),
-# ('velocity_ratio', np.char,),
-# ('acceleration_ratio', np.char,),
-# ('jerk_ratio', np.char,),
-# ('xyz_velocity_ratio', np.char,),
-# ('r_velocity_ratio', np.char,),
-# ('xyz_acceleration_ratio', np.char,),
-# ('r_acceleration_ratio', np.char,),
-# ('xyz_jerk_ratio', np.char,),
-# ('r_jerk_ratio', np.char,),
-# ('brake_status', np.char,),
-# ('enable_status', np.char,),
-# ('drag_status', np.char,),
-# ('running_status', np.char,),
-# ('error_status', np.char,),
-# ('jog_status', np.char,),
-# ('robot_type', np.char,),
-# ('drag_button_signal', np.char,),
-# ('enable_button_signal', np.char,),
-# ('record_button_signal', np.char,),
-# ('reappear_button_signal', np.char,),
-# ('jaw_button_signal', np.char,),
-# ('six_force_online', np.char,),
-# ('reserve2', np.char, (82, )),
-# ('m_actual', np.float64, (6, )),
-# ('load', np.float64,),
-# ('center_x', np.float64,),
-# ('center_y', np.float64,),
-# ('center_z', np.float64,),
-# ('user[6]', np.float64, (6, )),
-# ('tool[6]', np.float64, (6, )),
-# ('trace_index', np.float64,),
-# ('six_force_value', np.float64, (6, )),
-# ('target_quaternion', np.float64, (4, )),
-# ('actual_quaternion', np.float64, (4, )),
-# ('reserve3', np.char, (24, ))])
+MyType=np.dtype([('len', np.int16, ), 
+                ('Reserve', np.int16, (3,) ),
+                ('digital_input_bits', np.int64, ), 
+                ('digital_outputs', np.int64, ), 
+                ('robot_mode', np.int64, ), 
+                ('controller_timer', np.int64, ),
+                ('run_time', np.int64, ), 
+                ('test_value', np.int64, ), 
+                ('safety_mode', np.float64, ), 
+                ('speed_scaling', np.float64, ), 
+                ('linear_momentum_norm', np.float64, ),
+                ('v_main', np.float64, ), 
+                ('v_robot', np.float64, ), 
+                ('i_robot', np.float64, ), 
+                ('program_state', np.float64, ), 
+                ('safety_status', np.float64, ), 
+                ('tool_accelerometer_values', np.float64, (3,)), 
+                ('elbow_position', np.float64, (3,)), 
+                ('elbow_velocity', np.float64, (3,)), 
+                ('q_target', np.float64, (6,)), 
+                ('qd_target', np.float64,(6,)),
+                ('qdd_target', np.float64, (6,)), 
+                ('i_target', np.float64,(6,)), 
+                ('m_target', np.float64, (6,)), 
+                ('q_actual', np.float64, (6,)), 
+                ('qd_actual', np.float64, (6,)), 
+                ('i_actual', np.float64, (6,)), 
+                ('i_control', np.float64, (6,)), 
+                ('tool_vector_actual', np.float64, (6,)), 
+                ('TCP_speed_actual', np.float64, (6,)), 
+                ('TCP_force', np.float64, (6,)),
+                ('Tool_vector_target', np.float64, (6,)), 
+                ('TCP_speed_target', np.float64, (6,)), 
+                ('motor_temperatures', np.float64, (6,)), 
+                ('joint_modes', np.float64, (6,)), 
+                ('v_actual', np.float64, (6,)), 
+                ('handtype', np.int8, (4,)),
+                ('userCoordinate', np.int8, (1,)), 
+                ('toolCoordinate', np.int8, (1,)),
+                ('isRunQueuedCmd', np.int8, (1,)), 
+                ('isPauseCmdFlag', np.int8, (1,)),
+                ('velocityRatio', np.int8, (1,)), 
+                ('accelerationRatio', np.int8, (1,)),
+                ('jerkRatio', np.int8, (1,)), 
+                ('xyzVelocityRatio', np.int8, (1,)),
+                ('rVelocityRatio', np.int8, (1,)), 
+                ('xyzAccelerationRatio', np.int8, (1,)),
+                ('rAccelerationRatio', np.int8, (1,)), 
+                ('xyzJerkRatio', np.int8, (1,)),
+                ('rJerkRatio', np.int8, (1,)), 
+                ('BrakeStatus', np.int8, (1,)),
+                ('EnableStatus', np.int8, (1,)),
+                ('DragStatus', np.int8, (1,)),
+                ('RunningStatus', np.int8, (1,)),
+                ('ErrorStatus', np.int8, (1,)),
+                ('JogStatus', np.int8, (1,)),
+                ('RobotType', np.int8, (1,)),
+                ('DragButtonSignal', np.int8, (1,)),
+                ('EnableButtonSignal', np.int8, (1,)),
+                ('RecordButtonSignal', np.int8, (1,)),
+                ('ReappearButtonSignal', np.int8, (1,)),
+                ('JawButtonSignal', np.int8, (1,)),
+                ('SixForceOnline', np.int8, (1,)),#1037
+                ('Reserve2', np.int8, (82,)),
+                ('m_actual[6]', np.float64, (6,)), 
+                ('load', np.float64, (1,)),
+                ('centerX', np.float64, (1,)), 
+                ('centerY', np.float64, (1,)),
+                ('centerZ', np.float64, (1,)), 
+                ('user', np.float64, (6,)),
+                ('tool', np.float64, (6,)), 
+                ('traceIndex', np.int64,),
+                ('SixForceValue', np.int64, (6,)),
+                ('TargetQuaternion', np.float64, (4,)),
+                ('ActualQuaternion', np.float64, (4,)),
+                ('Reserve3', np.int8, (24,)),
+                ])
 
+#读取控制器和伺服告警文件
+def alarmAlarmJsonFile():
+    currrntDirectory=os.path.dirname(__file__)
+    jsonContrellorPath=os.path.join(currrntDirectory,alarmControllerFile)
+    jsonServoPath=os.path.join(currrntDirectory,alarmServoFile)
+    
+    with open(jsonContrellorPath,encoding='utf-8') as f:
+        dataController=json.load(f)
+    with open(jsonServoPath,encoding='utf-8') as f:
+        dataServo=json.load(f)
+    return dataController,dataServo   
+ 
 
 class DobotApi:
     def __init__(self, ip, port, *args):
@@ -170,11 +158,17 @@ class DobotApiDashboard(DobotApi):
     Define class dobot_api_dashboard to establish a connection to Dobot
     """
 
-    def EnableRobot(self):
+    def EnableRobot(self,*dynParams):
         """
         Enable the robot
         """
-        string = "EnableRobot()"
+        string = "EnableRobot("
+        for i in range(len(dynParams)):
+         if i == len(dynParams)-1:
+            string = string + str(dynParams[i])
+         else:
+            string = string + str(dynParams[i]) + ","
+        string = string + ")"
         self.send_data(string)
         return self.wait_reply()
 
@@ -353,7 +347,7 @@ class DobotApiDashboard(DobotApi):
         self.send_data(string)
         return self.wait_reply()
 
-    def GetHoldRegs(self, id, addr, count, type):
+    def GetHoldRegs(self, id, addr, count, type=None):
         """
         Read hold register
         id :Secondary device NUMBER (A maximum of five devices can be supported. The value ranges from 0 to 4
@@ -367,12 +361,16 @@ class DobotApiDashboard(DobotApi):
             "F32" : reads 32-bit single-precision floating-point number (4 bytes, occupying 2 registers)
             "F64" : reads 64-bit double precision floating point number (8 bytes, occupying 4 registers)
         """
-        string = "GetHoldRegs({:d},{:d},{:d},{:s})".format(
+        if type is not None:  
+          string = "GetHoldRegs({:d},{:d},{:d},{:s})".format(
             id, addr, count, type)
+        else:
+          string = "GetHoldRegs({:d},{:d},{:d})".format(
+            id, addr, count)   
         self.send_data(string)
         return self.wait_reply()
 
-    def SetHoldRegs(self, id, addr, count, table, type):
+    def SetHoldRegs(self, id, addr, count, table, type=None):
         """
         Write hold register
         id :Secondary device NUMBER (A maximum of five devices can be supported. The value ranges from 0 to 4
@@ -386,7 +384,11 @@ class DobotApiDashboard(DobotApi):
             "F32" : reads 32-bit single-precision floating-point number (4 bytes, occupying 2 registers)
             "F64" : reads 64-bit double precision floating point number (8 bytes, occupying 4 registers)
         """
-        string = "SetHoldRegs({:d},{:d},{:d},{:d},{:s})".format(
+        if type is not None:
+         string = "SetHoldRegs({:d},{:d},{:d},{:d})".format(
+            id, addr, count, table)
+        else:
+         string = "SetHoldRegs({:d},{:d},{:d},{:d},{:s})".format(
             id, addr, count, table, type)
         self.send_data(string)
         return self.wait_reply()
@@ -398,86 +400,250 @@ class DobotApiDashboard(DobotApi):
         string = "GetErrorID()"
         self.send_data(string)
         return self.wait_reply()
+    
+    
+    def DOExecute(self,offset1,offset2):
+        string = "DOExecute({:d},{:d}".format(offset1,offset2)+")"
+        self.send_data(string)
+        return self.wait_reply()
+      
+    def ToolDO(self,offset1,offset2):
+        string = "ToolDO({:d},{:d}".format(offset1,offset2)+")"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def ToolDOExecute(self,offset1,offset2):
+        string = "ToolDOExecute({:d},{:d}".format(offset1,offset2)+")"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def  SetArmOrientation(self,offset1):
+        string = "SetArmOrientation({:d}".format(offset1)+")"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def SetPayload(self, offset1, *dynParams):
+        string = "SetPayload({:f}".format(
+            offset1)
+        for params in dynParams:
+          string = string +","+ str(params)+","
+        string = string + ")"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def PositiveSolution(self,offset1,offset2,offset3,offset4,user,tool):   
+        string = "PositiveSolution({:f},{:f},{:f},{:f},{:d},{:d}".format(offset1,offset2,offset3,offset4,user,tool)+")"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def InverseSolution(self,offset1,offset2,offset3,offset4,user,tool,*dynParams):       
+        string = "InverseSolution({:f},{:f},{:f},{:f},{:d},{:d}".format(offset1,offset2,offset3,offset4,user,tool)
+        for params in dynParams:
+            print(type(params), params)
+            string = string + repr(params)
+        string = string + ")"
+        self.send_data(string)
+        return self.wait_reply()     
+
+    def SetCollisionLevel(self,offset1):
+        string = "SetCollisionLevel({:d}".format(offset1)+")"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def  GetAngle(self):
+        string = "GetAngle()"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def  GetPose(self):   
+        string = "GetPose()"
+        self.send_data(string)
+        return self.wait_reply()
+    
+    def EmergencyStop(self):
+        string = "EmergencyStop()"
+        self.send_data(string)
+        return self.wait_reply()
 
 
+    def ModbusCreate(self,ip,port,slave_id,isRTU):
+        string ="ModbusCreate({:s},{:d},{:d},{:d}".format(ip,port,slave_id,isRTU)+")"
+        self.send_data(string)
+        return self.wait_reply()
+    
+    def ModbusClose(self,offset1):
+        string = "ModbusClose({:d}".format(offset1)+")"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def GetInBits(self,offset1,offset2,offset3):
+        string = "GetInBits({:d},{:d},{:d}".format(offset1,offset2,offset3)+")"
+        self.send_data(string)
+        return self.wait_reply()        
+
+    def GetInRegs(self,offset1,offset2,offset3,*dynParams):
+        string = "GetInRegs({:d},{:d},{:d}".format(offset1,offset2,offset3)
+        for params in dynParams:
+            print(type(params), params)
+            string = string + params[0]
+        string = string + ")"
+        self.send_data(string)
+        return self.wait_reply()  
+
+    def GetCoils(self,offset1,offset2,offset3):
+        string = "GetCoils({:d},{:d},{:d}".format(offset1,offset2,offset3)+")"
+        self.send_data(string)
+        return self.wait_reply()          
+
+    def SetCoils(self,offset1,offset2,offset3,offset4):
+        string = "SetCoils({:d},{:d},{:d}".format(offset1,offset2,offset3)+","+ repr(offset4)+")"
+        print(str(offset4))
+        self.send_data(string)
+        return self.wait_reply()              
+
+    def DI(self,offset1):
+        string = "DI({:d}".format(offset1)+")"
+        self.send_data(string)
+        return self.wait_reply()        
+
+    def ToolDI(self,offset1):
+        string = "DI({:d}".format(offset1)+")"
+        self.send_data(string)
+        return self.wait_reply()   
+
+    def DOGroup(self,*dynParams):
+        string = "DOGroup("
+        for params in dynParams:
+            string = string + str(params)+","
+        string =string+ ")"   
+        return self.wait_reply()  
+
+    def BrakeControl(self,offset1,offset2): 
+        string = "BrakeControl({:d},{:d}".format(offset1,offset2)+")"
+        self.send_data(string)
+        return self.wait_reply()             
+
+    def StartDrag(self):
+        string = "StartDrag()"
+        self.send_data(string)
+        return self.wait_reply()      
+
+    def StopDrag(self):
+        string = "StopDrag()"
+        self.send_data(string)
+        return self.wait_reply()           
+
+    def LoadSwitch(self,offset1):    
+        string = "LoadSwitch({:d}".format(offset1)+")"
+        self.send_data(string)
+        return self.wait_reply()                                                       
+
+    def wait(self):
+        string = "wait()"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def pause(self):
+        string = "pause()"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def Continue(self):
+        string = "continue()"
+        self.send_data(string)
+        return self.wait_reply()
+    
 class DobotApiMove(DobotApi):
     """
     Define class dobot_api_move to establish a connection to Dobot
     """
 
-    def MovJ(self, x, y, z, r):
+    def MovJ(self, x, y, z, r,*dynParams):
         """
         Joint motion interface (point-to-point motion mode)
         x: A number in the Cartesian coordinate system x
         y: A number in the Cartesian coordinate system y
         z: A number in the Cartesian coordinate system z
-        rx: Position of Rx axis in Cartesian coordinate system
-        ry: Position of Ry axis in Cartesian coordinate system
-        rz: Position of Rz axis in Cartesian coordinate system
+        r: A number in the Cartesian coordinate system R
         """
-        string = "MovJ({:f},{:f},{:f},{:f})".format(
+        string = "MovJ({:f},{:f},{:f},{:f}".format(
             x, y, z, r)
+        for params in dynParams:
+             string =string+ ","+ str(params)
+        string =string+ ")" 
+        print(string)  
         self.send_data(string)
         return self.wait_reply()
 
-    def MovL(self, x, y, z, r):
+    def MovL(self, x, y, z, r,*dynParams):
         """
         Coordinate system motion interface (linear motion mode)
         x: A number in the Cartesian coordinate system x
         y: A number in the Cartesian coordinate system y
         z: A number in the Cartesian coordinate system z
-        rx: Position of Rx axis in Cartesian coordinate system
-        ry: Position of Ry axis in Cartesian coordinate system
-        rz: Position of Rz axis in Cartesian coordinate system
+        r: A number in the Cartesian coordinate system R
         """
-        string = "MovL({:f},{:f},{:f},{:f})".format(
+        string = "MovL({:f},{:f},{:f},{:f}".format(
             x, y, z, r)
+        for params in dynParams:
+             string =string+ ","+ str(params)
+        string =string+ ")" 
+        print(string) 
         self.send_data(string)
         return self.wait_reply()
 
-    def JointMovJ(self, j1, j2, j3, j4):
+    def JointMovJ(self, j1, j2, j3, j4,*dynParams):
         """
         Joint motion interface (linear motion mode)
         j1~j6:Point position values on each joint
         """
-        string = "JointMovJ({:f},{:f},{:f},{:f})".format(
+        string = "JointMovJ({:f},{:f},{:f},{:f}".format(
             j1, j2, j3, j4)
+        for params in dynParams:
+            string =string+ ","+ str(params)
+        string =string+ ")" 
+        print(string)
         self.send_data(string)
         return self.wait_reply()
 
     def Jump(self):
         print("待定")
 
-    def RelMovJ(self, offset1, offset2, offset3, offset4, offset5, offset6):
+    def RelMovJ(self, x, y, z, r,*dynParams):
         """
         Offset motion interface (point-to-point motion mode)
         j1~j6:Point position values on each joint
         """
-        string = "RelMovJ({:f},{:f},{:f},{:f},{:f},{:f})".format(
-            offset1, offset2, offset3, offset4, offset5, offset6)
+        string = "RelMovJ({:f},{:f},{:f},{:f}".format(
+            x, y, z, r)
+        for params in dynParams:
+            string =string+ ","+ str(params)
+        string =string+ ")" 
         self.send_data(string)
         return self.wait_reply()
 
-    def RelMovL(self, offsetX, offsetY, offsetZ):
+    def RelMovL(self, offsetX, offsetY, offsetZ,offsetR,*dynParams):
         """
         Offset motion interface (point-to-point motion mode)
         x: Offset in the Cartesian coordinate system x
         y: offset in the Cartesian coordinate system y
         z: Offset in the Cartesian coordinate system Z
+        r: Offset in the Cartesian coordinate system R
         """
-        string = "RelMovL({:f},{:f},{:f})".format(offsetX, offsetY, offsetZ)
+        string = "RelMovL({:f},{:f},{:f},{:f}".format(offsetX, offsetY, offsetZ,offsetR)
+        for params in dynParams:
+            string =string+ ","+ str(params)
+        string =string+ ")" 
         self.send_data(string)
         return self.wait_reply()
 
-    def MovLIO(self, x, y, z, a, b, c, *dynParams):
+    def MovLIO(self, x, y, z, r, *dynParams):
         """
         Set the digital output port state in parallel while moving in a straight line
         x: A number in the Cartesian coordinate system x
         y: A number in the Cartesian coordinate system y
         z: A number in the Cartesian coordinate system z
-        a: A number in the Cartesian coordinate system a
-        b: A number in the Cartesian coordinate system b
-        c: a number in the Cartesian coordinate system c
+        r: A number in the Cartesian coordinate system r
         *dynParams :Parameter Settings（Mode、Distance、Index、Status）
                     Mode :Set Distance mode (0: Distance percentage; 1: distance from starting point or target point)
                     Distance :Runs the specified distance（If Mode is 0, the value ranges from 0 to 100；When Mode is 1, if the value is positive,
@@ -486,26 +652,21 @@ class DobotApiMove(DobotApi):
                     Status ：Digital output state（Value range：0/1）
         """
         # example： MovLIO(0,50,0,0,0,0,(0,50,1,0),(1,1,2,1))
-        string = "MovLIO({:f},{:f},{:f},{:f},{:f},{:f}".format(
-            x, y, z, a, b, c)
-        print(type(dynParams), dynParams)
+        string = "MovLIO({:f},{:f},{:f},{:f}".format(
+            x, y, z, r)
         for params in dynParams:
-            print(type(params), params)
-            string = string + ",{{{:d},{:d},{:d},{:d}}}".format(
-                params[0], params[1], params[2], params[3])
-        string = string + ")"
+            string =string+ ","+ str(params)
+        string =string+ ")" 
         self.send_data(string)
         return self.wait_reply()
 
-    def MovJIO(self, x, y, z, a, b, c, *dynParams):
+    def MovJIO(self, x, y, z, r, *dynParams):
         """
         Set the digital output port state in parallel during point-to-point motion
         x: A number in the Cartesian coordinate system x
         y: A number in the Cartesian coordinate system y
         z: A number in the Cartesian coordinate system z
-        a: A number in the Cartesian coordinate system a
-        b: A number in the Cartesian coordinate system b
-        c: a number in the Cartesian coordinate system c
+        r: A number in the Cartesian coordinate system r
         *dynParams :Parameter Settings（Mode、Distance、Index、Status）
                     Mode :Set Distance mode (0: Distance percentage; 1: distance from starting point or target point)
                     Distance :Runs the specified distance（If Mode is 0, the value ranges from 0 to 100；When Mode is 1, if the value is positive,
@@ -514,64 +675,69 @@ class DobotApiMove(DobotApi):
                     Status ：Digital output state（Value range：0/1）
         """
         # example： MovJIO(0,50,0,0,0,0,(0,50,1,0),(1,1,2,1))
-        string = "MovJIO({:f},{:f},{:f},{:f},{:f},{:f}".format(
-            x, y, z, a, b, c)
+        string = "MovJIO({:f},{:f},{:f},{:f}".format(
+            x, y, z, r)
         self.log("Send to 192.168.1.6:29999:" + string)
-        print(type(dynParams), dynParams)
         for params in dynParams:
-            print(type(params), params)
-            string = string + ",{{{:d},{:d},{:d},{:d}}}".format(
-                params[0], params[1], params[2], params[3])
-        string = string + ")"
+            string =string+ ","+ str(params)
+        string =string+ ")" 
+        print(string)
         self.send_data(string)
         return self.wait_reply()
 
-    def Arc(self, x1, y1, z1, a1, b1, c1, x2, y2, z2, a2, b2, c2):
+    def Arc(self, x1, y1, z1, r1, x2, y2, z2, r2,*dynParams):
         """
         Circular motion instruction
-        x1, y1, z1, a1, b1, c1 :Is the point value of intermediate point coordinates
-        x2, y2, z2, a2, b2, c2 :Is the value of the end point coordinates
+        x1, y1, z1, r1 :Is the point value of intermediate point coordinates
+        x2, y2, z2, r2 :Is the value of the end point coordinates
         Note: This instruction should be used together with other movement instructions
         """
-        string = "Arc({:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f})".format(
-            x1, y1, z1, a1, b1, c1, x2, y2, z2, a2, b2, c2)
+        string = "Arc({:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f}".format(
+            x1, y1, z1, r1, x2, y2, z2, r2)
+        for params in dynParams:
+            string =string+ ","+ str(params)
+        string =string+ ")" 
+        print(string)
         self.send_data(string)
         return self.wait_reply()
 
-    def Circle(self, count, x1, y1, z1, a1, b1, c1, x2, y2, z2, a2, b2, c2):
+    def Circle(self, x1, y1, z1, r1, x2, y2, z2, r2,count,*dynParams):
         """
         Full circle motion command
         count：Run laps
-        x1, y1, z1, a1, b1, c1 :Is the point value of intermediate point coordinates
-        x2, y2, z2, a2, b2, c2 :Is the value of the end point coordinates
+        x1, y1, z1, r1 :Is the point value of intermediate point coordinates
+        x2, y2, z2, r2 :Is the value of the end point coordinates
         Note: This instruction should be used together with other movement instructions
         """
-        string = "Circle({:d},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f})".format(
-            count, x1, y1, z1, a1, b1, c1, x2, y2, z2, a2, b2, c2)
+        string = "Circle({:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:d}".format(
+             x1, y1, z1, r1, x2, y2, z2, r2, count)
+        for params in dynParams:
+            string = string + ","+ str(params)
+        string = string + ")" 
         self.send_data(string)
         return self.wait_reply()
 
-    def ServoJ(self, j1, j2, j3, j4, j5, j6):
-        """
-        Dynamic follow command based on joint space
-        j1~j6:Point position values on each joint
-        """
-        string = "ServoJ({:f},{:f},{:f},{:f},{:f},{:f})".format(
-            j1, j2, j3, j4, j5, j6)
-        self.send_data(string)
-        return self.wait_reply()
+    # def ServoJ(self, j1, j2, j3, j4, j5, j6):
+    #     """
+    #     Dynamic follow command based on joint space
+    #     j1~j6:Point position values on each joint
+    #     """
+    #     string = "ServoJ({:f},{:f},{:f},{:f},{:f},{:f})".format(
+    #         j1, j2, j3, j4, j5, j6)
+    #     self.send_data(string)
+    #     return self.wait_reply()
 
-    def ServoP(self, x, y, z, a, b, c):
-        """
-        Dynamic following command based on Cartesian space
-        x, y, z, a, b, c :Cartesian coordinate point value
-        """
-        string = "ServoP({:f},{:f},{:f},{:f},{:f},{:f})".format(
-            x, y, z, a, b, c)
-        self.send_data(string)
-        return self.wait_reply()
+    # def ServoP(self, x, y, z, a, b, c):
+    #     """
+    #     Dynamic following command based on Cartesian space
+    #     x, y, z, a, b, c :Cartesian coordinate point value
+    #     """
+    #     string = "ServoP({:f},{:f},{:f},{:f},{:f},{:f})".format(
+    #         x, y, z, a, b, c)
+    #     self.send_data(string)
+    #     return self.wait_reply()
 
-    def MoveJog(self, axis_id, *dynParams):
+    def MoveJog(self, axis_id=None, *dynParams):
         """
         Joint motion
         axis_id: Joint motion axis, optional string value:
@@ -584,54 +750,55 @@ class DobotApiMove(DobotApi):
                     user_index: user index is 0 ~ 9 (default value is 0)
                     tool_index: tool index is 0 ~ 9 (default value is 0)
         """
-        string = f"MoveJog({axis_id}"
+        if axis_id is not None:
+          string = "MoveJog({:f}".format(axis_id)
+        else:
+          string = "MoveJog("
         for params in dynParams:
-            print(type(params), params)
-            string = string + ", CoordType={:d}, User={:d}, Tool={:d}".format(
-                params[0], params[1], params[2])
-        string = string + ")"
+            string = string + ","+ str(params)
+        string = string + ")" 
         self.send_data(string)
         return self.wait_reply()
 
-    def StartTrace(self, trace_name):
-        """
-        Trajectory fitting (track file Cartesian points)
-        trace_name: track file name (including suffix)
-        (The track path is stored in /dobot/userdata/project/process/trajectory/)
+    # def StartTrace(self, trace_name):
+    #     """
+    #     Trajectory fitting (track file Cartesian points)
+    #     trace_name: track file name (including suffix)
+    #     (The track path is stored in /dobot/userdata/project/process/trajectory/)
 
-        It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
-        """
-        string = f"StartTrace({trace_name})"
-        self.send_data(string)
-        return self.wait_reply()
+    #     It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
+    #     """
+    #     string = f"StartTrace({trace_name})"
+    #     self.send_data(string)
+    #     return self.wait_reply()
 
-    def StartPath(self, trace_name, const, cart):
-        """
-        Track reproduction. (track file joint points)
-        trace_name: track file name (including suffix)
-        (The track path is stored in /dobot/userdata/project/process/trajectory/)
-        const: When const = 1, it repeats at a constant speed, and the pause and dead zone in the track will be removed;
-               When const = 0, reproduce according to the original speed;
-        cart: When cart = 1, reproduce according to Cartesian path;
-              When cart = 0, reproduce according to the joint path;
+    # def StartPath(self, trace_name, const, cart):
+    #     """
+    #     Track reproduction. (track file joint points)
+    #     trace_name: track file name (including suffix)
+    #     (The track path is stored in /dobot/userdata/project/process/trajectory/)
+    #     const: When const = 1, it repeats at a constant speed, and the pause and dead zone in the track will be removed;
+    #            When const = 0, reproduce according to the original speed;
+    #     cart: When cart = 1, reproduce according to Cartesian path;
+    #           When cart = 0, reproduce according to the joint path;
 
-        It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
-        """
-        string = f"StartPath({trace_name}, {const}, {cart})"
-        self.send_data(string)
-        return self.wait_reply()
+    #     It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
+    #     """
+    #     string = f"StartPath({trace_name}, {const}, {cart})"
+    #     self.send_data(string)
+    #     return self.wait_reply()
 
-    def StartFCTrace(self, trace_name):
-        """
-        Trajectory fitting with force control. (track file Cartesian points)
-        trace_name: track file name (including suffix)
-        (The track path is stored in /dobot/userdata/project/process/trajectory/)
+    # def StartFCTrace(self, trace_name):
+    #     """
+    #     Trajectory fitting with force control. (track file Cartesian points)
+    #     trace_name: track file name (including suffix)
+    #     (The track path is stored in /dobot/userdata/project/process/trajectory/)
 
-        It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
-        """
-        string = f"StartFCTrace({trace_name})"
-        self.send_data(string)
-        return self.wait_reply()
+    #     It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
+    #     """
+    #     string = f"StartFCTrace({trace_name})"
+    #     self.send_data(string)
+    #     return self.wait_reply()
 
     def Sync(self):
         """
@@ -641,107 +808,100 @@ class DobotApiMove(DobotApi):
         self.send_data(string)
         return self.wait_reply()
 
-    def RelMovJTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
-        """
-        The relative motion command is carried out along the tool coordinate system, and the end motion mode is joint motion
-        offset_x: X-axis direction offset
-        offset_y: Y-axis direction offset
-        offset_z: Z-axis direction offset
-        offset_rx: Rx axis position
-        offset_ry: Ry axis position
-        offset_rz: Rz axis position
-        tool: Select the calibrated tool coordinate system, value range: 0 ~ 9
-        *dynParams: parameter Settings（speed_j, acc_j, user）
-                    speed_j: Set joint speed scale, value range: 1 ~ 100
-                    acc_j: Set acceleration scale value, value range: 1 ~ 100
-                    user: Set user coordinate system index
-        """
-        string = "RelMovJTool({:f},{:f},{:f},{:f},{:f},{:f}, {:d}".format(
-            offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool)
-        for params in dynParams:
-            print(type(params), params)
-            string = string + ", SpeedJ={:d}, AccJ={:d}, User={:d}".format(
-                params[0], params[1], params[2])
-        string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()
+    # def RelMovJTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
+    #     """
+    #     The relative motion command is carried out along the tool coordinate system, and the end motion mode is joint motion
+    #     offset_x: X-axis direction offset
+    #     offset_y: Y-axis direction offset
+    #     offset_z: Z-axis direction offset
+    #     offset_rx: Rx axis position
+    #     offset_ry: Ry axis position
+    #     offset_rz: Rz axis position
+    #     tool: Select the calibrated tool coordinate system, value range: 0 ~ 9
+    #     *dynParams: parameter Settings（speed_j, acc_j, user）
+    #                 speed_j: Set joint speed scale, value range: 1 ~ 100
+    #                 acc_j: Set acceleration scale value, value range: 1 ~ 100
+    #                 user: Set user coordinate system index
+    #     """
+    #     string = "RelMovJTool({:f},{:f},{:f},{:f},{:f},{:f}, {:d}".format(
+    #         offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool)
+    #     for params in dynParams:
+    #         print(type(params), params)
+    #         string = string + ", SpeedJ={:d}, AccJ={:d}, User={:d}".format(
+    #             params[0], params[1], params[2])
+    #     string = string + ")"
+    #     self.send_data(string)
+    #     return self.wait_reply()
 
-    def RelMovLTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
-        """
-        Carry out relative motion command along the tool coordinate system, and the end motion mode is linear motion
-        offset_x: X-axis direction offset
-        offset_y: Y-axis direction offset
-        offset_z: Z-axis direction offset
-        offset_rx: Rx axis position
-        offset_ry: Ry axis position
-        offset_rz: Rz axis position
-        tool: Select the calibrated tool coordinate system, value range: 0 ~ 9
-        *dynParams: parameter Settings（speed_l, acc_l, user）
-                    speed_l: Set Cartesian speed scale, value range: 1 ~ 100
-                    acc_l: Set acceleration scale value, value range: 1 ~ 100
-                    user: Set user coordinate system index
-        """
-        string = "RelMovLTool({:f},{:f},{:f},{:f},{:f},{:f}, {:d}".format(
-            offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool)
-        for params in dynParams:
-            print(type(params), params)
-            string = string + ", SpeedJ={:d}, AccJ={:d}, User={:d}".format(
-                params[0], params[1], params[2])
-        string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()
+    # def RelMovLTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
+    #     """
+    #     Carry out relative motion command along the tool coordinate system, and the end motion mode is linear motion
+    #     offset_x: X-axis direction offset
+    #     offset_y: Y-axis direction offset
+    #     offset_z: Z-axis direction offset
+    #     offset_rx: Rx axis position
+    #     offset_ry: Ry axis position
+    #     offset_rz: Rz axis position
+    #     tool: Select the calibrated tool coordinate system, value range: 0 ~ 9
+    #     *dynParams: parameter Settings（speed_l, acc_l, user）
+    #                 speed_l: Set Cartesian speed scale, value range: 1 ~ 100
+    #                 acc_l: Set acceleration scale value, value range: 1 ~ 100
+    #                 user: Set user coordinate system index
+    #     """
+    #     string = "RelMovLTool({:f},{:f},{:f},{:f},{:f},{:f}, {:d}".format(
+    #         offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool)
+    #     for params in dynParams:
+    #         print(type(params), params)
+    #         string = string + ", SpeedJ={:d}, AccJ={:d}, User={:d}".format(
+    #             params[0], params[1], params[2])
+    #     string = string + ")"
+    #     self.send_data(string)
+    #     return self.wait_reply()
 
-    def RelMovJUser(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, user, *dynParams):
+    def RelMovJUser(self, offset_x, offset_y, offset_z, offset_r, user, *dynParams):
         """
         The relative motion command is carried out along the user coordinate system, and the end motion mode is joint motion
         offset_x: X-axis direction offset
         offset_y: Y-axis direction offset
         offset_z: Z-axis direction offset
-        offset_rx: Rx axis position
-        offset_ry: Ry axis position
-        offset_rz: Rz axis position
+        offset_r: R-axis direction offset
+
         user: Select the calibrated user coordinate system, value range: 0 ~ 9
         *dynParams: parameter Settings（speed_j, acc_j, tool）
                     speed_j: Set joint speed scale, value range: 1 ~ 100
                     acc_j: Set acceleration scale value, value range: 1 ~ 100
                     tool: Set tool coordinate system index
         """
-        string = "RelMovJUser({:f},{:f},{:f},{:f},{:f},{:f}, {:d}".format(
-            offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, user)
+        string = "RelMovJUser({:f},{:f},{:f},{:f}, {:d}".format(
+            offset_x, offset_y, offset_z, offset_r, user)
         for params in dynParams:
-            print(type(params), params)
-            string = string + ", SpeedJ={:d}, AccJ={:d}, Tool={:d}".format(
-                params[0], params[1], params[2])
+            string = string + ","+ str(params)
         string = string + ")"
         self.send_data(string)
         return self.wait_reply()
 
-    def RelMovLUser(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, user, *dynParams):
+    def RelMovLUser(self, offset_x, offset_y, offset_z, offset_r, user, *dynParams):
         """
         The relative motion command is carried out along the user coordinate system, and the end motion mode is linear motion
         offset_x: X-axis direction offset
         offset_y: Y-axis direction offset
         offset_z: Z-axis direction offset
-        offset_rx: Rx axis position
-        offset_ry: Ry axis position
-        offset_rz: Rz axis position
+        offset_r: R-axis direction offset
         user: Select the calibrated user coordinate system, value range: 0 ~ 9
         *dynParams: parameter Settings（speed_l, acc_l, tool）
                     speed_l: Set Cartesian speed scale, value range: 1 ~ 100
                     acc_l: Set acceleration scale value, value range: 1 ~ 100
                     tool: Set tool coordinate system index
         """
-        string = "RelMovLUser({:f},{:f},{:f},{:f},{:f},{:f}, {:d}".format(
-            offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, user)
+        string = "RelMovLUser({:f},{:f},{:f},{:f}, {:d}".format(
+            offset_x, offset_y, offset_z, offset_r, user)
         for params in dynParams:
-            print(type(params), params)
-            string = string + ", SpeedJ={:d}, AccJ={:d}, Tool={:d}".format(
-                params[0], params[1], params[2])
+            string = string + ","+ str(params)
         string = string + ")"
         self.send_data(string)
         return self.wait_reply()
 
-    def RelJointMovJ(self, offset1, offset2, offset3, offset4, offset5, offset6, *dynParams):
+    def RelJointMovJ(self, offset1, offset2, offset3, offset4, *dynParams):
         """
         The relative motion command is carried out along the joint coordinate system of each axis, and the end motion mode is joint motion
         Offset motion interface (point-to-point motion mode)
@@ -750,12 +910,26 @@ class DobotApiMove(DobotApi):
                     speed_j: Set Cartesian speed scale, value range: 1 ~ 100
                     acc_j: Set acceleration scale value, value range: 1 ~ 100
         """
-        string = "RelJointMovJ({:f},{:f},{:f},{:f},{:f},{:f}".format(
-            offset1, offset2, offset3, offset4, offset5, offset6)
+        string = "RelJointMovJ({:f},{:f},{:f},{:f}".format(
+            offset1, offset2, offset3, offset4)
         for params in dynParams:
-            print(type(params), params)
-            string = string + ", SpeedJ={:d}, AccJ={:d}".format(
-                params[0], params[1])
+           string = string + ","+ str(params)
         string = string + ")"
         self.send_data(string)
         return self.wait_reply()
+    
+    def MovJExt(self, offset1, *dynParams):
+        string = "MovJExt({:f}".format(
+            offset1)
+        for params in dynParams:
+           string = string + ","+ str(params)
+        string = string + ")"
+        self.send_data(string)
+        return self.wait_reply()
+
+    def SyncAll(self):
+        string = "SyncAll()"
+        self.send_data(string)
+        return self.wait_reply()
+
+    
