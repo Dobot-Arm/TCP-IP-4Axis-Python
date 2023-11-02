@@ -751,7 +751,7 @@ class DobotApiMove(DobotApi):
                     tool_index: tool index is 0 ~ 9 (default value is 0)
         """
         if axis_id is not None:
-          string = "MoveJog({:f}".format(axis_id)
+          string = "MoveJog({:s}".format(axis_id)
         else:
           string = "MoveJog("
         for params in dynParams:

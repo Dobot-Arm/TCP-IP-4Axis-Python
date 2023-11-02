@@ -4,13 +4,13 @@ typora-root-url: ./picture
 
 English version of the README -> please [click here](./README-EN.md)
 
-dobot   TCP-IP-4Axis-Python-CMD   二次开发api接口 （ [TCP-IP-MG400-Python English README](https://github.com/Dobot-Arm/TCP-IP-4Axis-Python-CMD.git) ）
+dobot   TCP-IP-4Axis-Python-CMD   二次开发api接口 （ [TCP-IP-MG400-Python English README](https://github.com/Dobot-Arm/TCP-IP-4Axis-Python.git) ）
 
 
 
 # 1. 简介
 
-TCP-IP-4Axis-Python-CMD    是为 dobot 公司旗下基于TCP/IP协议的Python的封装设计的软件开发套件。它基于 Python 语言开发，遵循dobot-TCP-IP控制通信协议，通过socket与机器终端进行Tcp连接，  并为用户提供了易用的api接口。通过 TCP-IP-4Axis-Python-CMD ，用户可以快速地连接dobot机器并进行二次开发对机器的控制与使用。
+TCP-IP-4Axis-Python    是为 dobot 公司旗下基于TCP/IP协议的Python的封装设计的软件开发套件。它基于 Python 语言开发，遵循dobot-TCP-IP控制通信协议，通过socket与机器终端进行Tcp连接，  并为用户提供了易用的api接口。通过 TCP-IP-4Axis-Python ，用户可以快速地连接dobot机器并进行二次开发对机器的控制与使用。
 
 
 
@@ -51,18 +51,18 @@ TCP-IP-4Axis-Python-CMD    是为 dobot 公司旗下基于TCP/IP协议的Python�
 
 
 
-# 3.TCP-IP-4Axis-Python-CMD 控制协议
+# 3.TCP-IP-4Axis-Python 控制协议
 
 由于基于TCP/IP的通讯具有成本低、可靠性高、实用性强、性能高等特点；许多工业自动化项目对支持TCP/IP协议控制机器人需求广泛，因此MG400/M1Pro机器人将设计在TCP/IP协议的基础上，提供了丰富的接口用于与外部设备的交互；有关协议更详细的信息请查阅**[《越疆TCPIP控制协议文档4AXis》](https://github.com/Dobot-Arm/TCP-IP-Protocol.git)**
 
 
 
-# 4. 获取TCP-IP-4Axis-Python-CMD 
+# 4. 获取TCP-IP-4Axis-Python 
 
 1. 从GitHub 下载或者克隆dobot  TCP-IP-4Axis-Python-CMD 二次开发api程序
 
    ```bash
-   `git clone https://github.com/Dobot-Arm/TCP-IP-4Axis-Python-CMD.git
+   `git clone https://github.com/Dobot-Arm/TCP-IP-4Axis-Python.git
    ```
 
 2.  参考对应的 README.md 文档使用；
@@ -242,7 +242,7 @@ MyType=np.dtype([('len', np.int16, ),
 1. 从GitHub 获取越疆dobot  TCP-IP-4Axis-Python-CMD  二次开发Api程序
 
    ```bash
-   `git clone https://github.com/Dobot-Arm/TCP-IP-4Axis-Python-CMD.git
+   `git clone https://github.com/Dobot-Arm/TCP-IP-4Axis-Python.git
    ```
 
 2. 通过LAN1网口-连接机器端，设置本机机器IP地址为192.168.1.X  网段
