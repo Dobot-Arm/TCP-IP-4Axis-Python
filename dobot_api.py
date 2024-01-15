@@ -130,17 +130,29 @@ class DobotApi:
             print(text)
 
     def send_data(self, string):
-        self.log(f"Send to 192.168.1.6:{self.port}: {string}")
-        self.socket_dobot.send(str.encode(string, 'utf-8'))
+        try:
+            self.log(f"Send to {self.ip}:{self.port}: {string}")
+            self.socket_dobot.send(str.encode(string, 'utf-8'))
+        except Exception as e:
+            print(e)
 
     def wait_reply(self):
         """
         Read the return value
         """
-        data = self.socket_dobot.recv(1024)
-        data_str = str(data, encoding="utf-8")
-        self.log(f'Receive from 192.168.1.6:{self.port}: {data_str}')
-        return data_str
+        data = ""
+        try:
+            data = self.socket_dobot.recv(1024)
+        except Exception as e:
+            print(e)
+
+        finally:
+            if len(data) == 0:
+                data_str = data
+            else:
+                data_str = str(data, encoding="utf-8")
+                self.log(f'Receive from {self.ip}:{self.port}: {data_str}')
+            return data_str 
 
     def close(self):
         """
@@ -148,6 +160,15 @@ class DobotApi:
         """
         if (self.socket_dobot != 0):
             self.socket_dobot.close()
+
+    def sendRecvMsg(self, string):
+        """
+        send-recv Sync
+        """
+        with self.__globalLock:
+            self.send_data(string)
+            recvData = self.wait_reply()
+            return recvData
 
     def __del__(self):
         self.close()
@@ -169,32 +190,28 @@ class DobotApiDashboard(DobotApi):
          else:
             string = string + str(dynParams[i]) + ","
         string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def DisableRobot(self):
         """
         Disabled the robot
         """
         string = "DisableRobot()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def ClearError(self):
         """
         Clear controller alarm information
         """
         string = "ClearError()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def ResetRobot(self):
         """
         Robot stop
         """
         string = "ResetRobot()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def SpeedFactor(self, speed):
         """
@@ -202,8 +219,7 @@ class DobotApiDashboard(DobotApi):
         speed:Rate value(Value range:1~100)
         """
         string = "SpeedFactor({:d})".format(speed)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def User(self, index):
         """
@@ -211,8 +227,7 @@ class DobotApiDashboard(DobotApi):
         index : Calibrated index of user coordinates
         """
         string = "User({:d})".format(index)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def Tool(self, index):
         """
@@ -220,16 +235,14 @@ class DobotApiDashboard(DobotApi):
         index : Calibrated index of tool coordinates
         """
         string = "Tool({:d})".format(index)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def RobotMode(self):
         """
         View the robot status
         """
         string = "RobotMode()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def PayLoad(self, weight, inertia):
         """
@@ -238,8 +251,7 @@ class DobotApiDashboard(DobotApi):
         inertia: The load moment of inertia
         """
         string = "PayLoad({:f},{:f})".format(weight, inertia)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def DO(self, index, status):
         """
@@ -248,8 +260,7 @@ class DobotApiDashboard(DobotApi):
         status : Status of digital signal output port(0:Low level，1:High level
         """
         string = "DO({:d},{:d})".format(index, status)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def AccJ(self, speed):
         """
@@ -257,8 +268,7 @@ class DobotApiDashboard(DobotApi):
         speed : Joint acceleration ratio (Value range:1~100)
         """
         string = "AccJ({:d})".format(speed)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def AccL(self, speed):
         """
@@ -266,8 +276,7 @@ class DobotApiDashboard(DobotApi):
         speed : Cartesian acceleration ratio (Value range:1~100)
         """
         string = "AccL({:d})".format(speed)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def SpeedJ(self, speed):
         """
@@ -275,8 +284,7 @@ class DobotApiDashboard(DobotApi):
         speed : Joint velocity ratio (Value range:1~100)
         """
         string = "SpeedJ({:d})".format(speed)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def SpeedL(self, speed):
         """
@@ -284,8 +292,7 @@ class DobotApiDashboard(DobotApi):
         speed : Cartesian acceleration ratio (Value range:1~100)
         """
         string = "SpeedL({:d})".format(speed)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def Arch(self, index):
         """
@@ -293,8 +300,7 @@ class DobotApiDashboard(DobotApi):
         index : Parameter index (Value range:0~9)
         """
         string = "Arch({:d})".format(index)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def CP(self, ratio):
         """
@@ -302,8 +308,7 @@ class DobotApiDashboard(DobotApi):
         ratio : Smooth transition ratio (Value range:1~100)
         """
         string = "CP({:d})".format(ratio)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def LimZ(self, value):
         """
@@ -311,8 +316,7 @@ class DobotApiDashboard(DobotApi):
         value : Maximum lifting height (Highly restricted:Do not exceed the limit position of the z-axis of the manipulator)
         """
         string = "LimZ({:d})".format(value)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def RunScript(self, project_name):
         """
@@ -320,32 +324,28 @@ class DobotApiDashboard(DobotApi):
         project_name ：Script file name
         """
         string = "RunScript({:s})".format(project_name)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def StopScript(self):
         """
         Stop scripts
         """
         string = "StopScript()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def PauseScript(self):
         """
         Pause the script
         """
         string = "PauseScript()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def ContinueScript(self):
         """
         Continue running the script
         """
         string = "ContinueScript()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def GetHoldRegs(self, id, addr, count, type=None):
         """
@@ -367,8 +367,7 @@ class DobotApiDashboard(DobotApi):
         else:
           string = "GetHoldRegs({:d},{:d},{:d})".format(
             id, addr, count)   
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def SetHoldRegs(self, id, addr, count, table, type=None):
         """
@@ -390,37 +389,31 @@ class DobotApiDashboard(DobotApi):
         else:
          string = "SetHoldRegs({:d},{:d},{:d},{:d},{:s})".format(
             id, addr, count, table, type)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def GetErrorID(self):
         """
         Get robot error code
         """
         string = "GetErrorID()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
     
     
     def DOExecute(self,offset1,offset2):
         string = "DOExecute({:d},{:d}".format(offset1,offset2)+")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
       
     def ToolDO(self,offset1,offset2):
         string = "ToolDO({:d},{:d}".format(offset1,offset2)+")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def ToolDOExecute(self,offset1,offset2):
         string = "ToolDOExecute({:d},{:d}".format(offset1,offset2)+")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def  SetArmOrientation(self,offset1):
         string = "SetArmOrientation({:d}".format(offset1)+")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def SetPayload(self, offset1, *dynParams):
         string = "SetPayload({:f}".format(
@@ -428,13 +421,11 @@ class DobotApiDashboard(DobotApi):
         for params in dynParams:
           string = string +","+ str(params)+","
         string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def PositiveSolution(self,offset1,offset2,offset3,offset4,user,tool):   
         string = "PositiveSolution({:f},{:f},{:f},{:f},{:d},{:d}".format(offset1,offset2,offset3,offset4,user,tool)+")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def InverseSolution(self,offset1,offset2,offset3,offset4,user,tool,*dynParams):       
         string = "InverseSolution({:f},{:f},{:f},{:f},{:d},{:d}".format(offset1,offset2,offset3,offset4,user,tool)
@@ -442,44 +433,36 @@ class DobotApiDashboard(DobotApi):
             print(type(params), params)
             string = string + repr(params)
         string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()     
+        return self.sendRecvMsg(string)     
 
     def SetCollisionLevel(self,offset1):
         string = "SetCollisionLevel({:d}".format(offset1)+")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def  GetAngle(self):
         string = "GetAngle()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def  GetPose(self):   
         string = "GetPose()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
     
     def EmergencyStop(self):
         string = "EmergencyStop()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
 
     def ModbusCreate(self,ip,port,slave_id,isRTU):
         string ="ModbusCreate({:s},{:d},{:d},{:d}".format(ip,port,slave_id,isRTU)+")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
     
     def ModbusClose(self,offset1):
         string = "ModbusClose({:d}".format(offset1)+")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def GetInBits(self,offset1,offset2,offset3):
         string = "GetInBits({:d},{:d},{:d}".format(offset1,offset2,offset3)+")"
-        self.send_data(string)
-        return self.wait_reply()        
+        return self.sendRecvMsg(string)        
 
     def GetInRegs(self,offset1,offset2,offset3,*dynParams):
         string = "GetInRegs({:d},{:d},{:d}".format(offset1,offset2,offset3)
@@ -487,29 +470,24 @@ class DobotApiDashboard(DobotApi):
             print(type(params), params)
             string = string + params[0]
         string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()  
+        return self.sendRecvMsg(string)  
 
     def GetCoils(self,offset1,offset2,offset3):
         string = "GetCoils({:d},{:d},{:d}".format(offset1,offset2,offset3)+")"
-        self.send_data(string)
-        return self.wait_reply()          
+        return self.sendRecvMsg(string)          
 
     def SetCoils(self,offset1,offset2,offset3,offset4):
         string = "SetCoils({:d},{:d},{:d}".format(offset1,offset2,offset3)+","+ repr(offset4)+")"
         print(str(offset4))
-        self.send_data(string)
-        return self.wait_reply()              
+        return self.sendRecvMsg(string)              
 
     def DI(self,offset1):
         string = "DI({:d}".format(offset1)+")"
-        self.send_data(string)
-        return self.wait_reply()        
+        return self.sendRecvMsg(string)        
 
     def ToolDI(self,offset1):
         string = "DI({:d}".format(offset1)+")"
-        self.send_data(string)
-        return self.wait_reply()   
+        return self.sendRecvMsg(string)   
 
     def DOGroup(self,*dynParams):
         string = "DOGroup("
@@ -520,38 +498,31 @@ class DobotApiDashboard(DobotApi):
 
     def BrakeControl(self,offset1,offset2): 
         string = "BrakeControl({:d},{:d}".format(offset1,offset2)+")"
-        self.send_data(string)
-        return self.wait_reply()             
+        return self.sendRecvMsg(string)             
 
     def StartDrag(self):
         string = "StartDrag()"
-        self.send_data(string)
-        return self.wait_reply()      
+        return self.sendRecvMsg(string)      
 
     def StopDrag(self):
         string = "StopDrag()"
-        self.send_data(string)
-        return self.wait_reply()           
+        return self.sendRecvMsg(string)           
 
     def LoadSwitch(self,offset1):    
         string = "LoadSwitch({:d}".format(offset1)+")"
-        self.send_data(string)
-        return self.wait_reply()                                                       
+        return self.sendRecvMsg(string)                                                       
 
     def wait(self):
         string = "wait()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def pause(self):
         string = "pause()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def Continue(self):
         string = "continue()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
     
 class DobotApiMove(DobotApi):
     """
@@ -572,8 +543,7 @@ class DobotApiMove(DobotApi):
              string =string+ ","+ str(params)
         string =string+ ")" 
         print(string)  
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def MovL(self, x, y, z, r,*dynParams):
         """
@@ -589,8 +559,7 @@ class DobotApiMove(DobotApi):
              string =string+ ","+ str(params)
         string =string+ ")" 
         print(string) 
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def JointMovJ(self, j1, j2, j3, j4,*dynParams):
         """
@@ -603,8 +572,7 @@ class DobotApiMove(DobotApi):
             string =string+ ","+ str(params)
         string =string+ ")" 
         print(string)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def Jump(self):
         print("待定")
@@ -619,8 +587,7 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
             string =string+ ","+ str(params)
         string =string+ ")" 
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def RelMovL(self, offsetX, offsetY, offsetZ,offsetR,*dynParams):
         """
@@ -634,8 +601,7 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
             string =string+ ","+ str(params)
         string =string+ ")" 
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def MovLIO(self, x, y, z, r, *dynParams):
         """
@@ -657,8 +623,7 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
             string =string+ ","+ str(params)
         string =string+ ")" 
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def MovJIO(self, x, y, z, r, *dynParams):
         """
@@ -682,8 +647,7 @@ class DobotApiMove(DobotApi):
             string =string+ ","+ str(params)
         string =string+ ")" 
         print(string)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def Arc(self, x1, y1, z1, r1, x2, y2, z2, r2,*dynParams):
         """
@@ -698,8 +662,7 @@ class DobotApiMove(DobotApi):
             string =string+ ","+ str(params)
         string =string+ ")" 
         print(string)
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def Circle(self, x1, y1, z1, r1, x2, y2, z2, r2,count,*dynParams):
         """
@@ -714,28 +677,7 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
             string = string + ","+ str(params)
         string = string + ")" 
-        self.send_data(string)
-        return self.wait_reply()
-
-    # def ServoJ(self, j1, j2, j3, j4, j5, j6):
-    #     """
-    #     Dynamic follow command based on joint space
-    #     j1~j6:Point position values on each joint
-    #     """
-    #     string = "ServoJ({:f},{:f},{:f},{:f},{:f},{:f})".format(
-    #         j1, j2, j3, j4, j5, j6)
-    #     self.send_data(string)
-    #     return self.wait_reply()
-
-    # def ServoP(self, x, y, z, a, b, c):
-    #     """
-    #     Dynamic following command based on Cartesian space
-    #     x, y, z, a, b, c :Cartesian coordinate point value
-    #     """
-    #     string = "ServoP({:f},{:f},{:f},{:f},{:f},{:f})".format(
-    #         x, y, z, a, b, c)
-    #     self.send_data(string)
-    #     return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def MoveJog(self, axis_id=None, *dynParams):
         """
@@ -757,106 +699,15 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
             string = string + ","+ str(params)
         string = string + ")" 
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
-    # def StartTrace(self, trace_name):
-    #     """
-    #     Trajectory fitting (track file Cartesian points)
-    #     trace_name: track file name (including suffix)
-    #     (The track path is stored in /dobot/userdata/project/process/trajectory/)
-
-    #     It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
-    #     """
-    #     string = f"StartTrace({trace_name})"
-    #     self.send_data(string)
-    #     return self.wait_reply()
-
-    # def StartPath(self, trace_name, const, cart):
-    #     """
-    #     Track reproduction. (track file joint points)
-    #     trace_name: track file name (including suffix)
-    #     (The track path is stored in /dobot/userdata/project/process/trajectory/)
-    #     const: When const = 1, it repeats at a constant speed, and the pause and dead zone in the track will be removed;
-    #            When const = 0, reproduce according to the original speed;
-    #     cart: When cart = 1, reproduce according to Cartesian path;
-    #           When cart = 0, reproduce according to the joint path;
-
-    #     It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
-    #     """
-    #     string = f"StartPath({trace_name}, {const}, {cart})"
-    #     self.send_data(string)
-    #     return self.wait_reply()
-
-    # def StartFCTrace(self, trace_name):
-    #     """
-    #     Trajectory fitting with force control. (track file Cartesian points)
-    #     trace_name: track file name (including suffix)
-    #     (The track path is stored in /dobot/userdata/project/process/trajectory/)
-
-    #     It needs to be used together with `GetTraceStartPose(recv_string.json)` interface
-    #     """
-    #     string = f"StartFCTrace({trace_name})"
-    #     self.send_data(string)
-    #     return self.wait_reply()
 
     def Sync(self):
         """
         The blocking program executes the queue instruction and returns after all the queue instructions are executed
         """
         string = "Sync()"
-        self.send_data(string)
-        return self.wait_reply()
-
-    # def RelMovJTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
-    #     """
-    #     The relative motion command is carried out along the tool coordinate system, and the end motion mode is joint motion
-    #     offset_x: X-axis direction offset
-    #     offset_y: Y-axis direction offset
-    #     offset_z: Z-axis direction offset
-    #     offset_rx: Rx axis position
-    #     offset_ry: Ry axis position
-    #     offset_rz: Rz axis position
-    #     tool: Select the calibrated tool coordinate system, value range: 0 ~ 9
-    #     *dynParams: parameter Settings（speed_j, acc_j, user）
-    #                 speed_j: Set joint speed scale, value range: 1 ~ 100
-    #                 acc_j: Set acceleration scale value, value range: 1 ~ 100
-    #                 user: Set user coordinate system index
-    #     """
-    #     string = "RelMovJTool({:f},{:f},{:f},{:f},{:f},{:f}, {:d}".format(
-    #         offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool)
-    #     for params in dynParams:
-    #         print(type(params), params)
-    #         string = string + ", SpeedJ={:d}, AccJ={:d}, User={:d}".format(
-    #             params[0], params[1], params[2])
-    #     string = string + ")"
-    #     self.send_data(string)
-    #     return self.wait_reply()
-
-    # def RelMovLTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
-    #     """
-    #     Carry out relative motion command along the tool coordinate system, and the end motion mode is linear motion
-    #     offset_x: X-axis direction offset
-    #     offset_y: Y-axis direction offset
-    #     offset_z: Z-axis direction offset
-    #     offset_rx: Rx axis position
-    #     offset_ry: Ry axis position
-    #     offset_rz: Rz axis position
-    #     tool: Select the calibrated tool coordinate system, value range: 0 ~ 9
-    #     *dynParams: parameter Settings（speed_l, acc_l, user）
-    #                 speed_l: Set Cartesian speed scale, value range: 1 ~ 100
-    #                 acc_l: Set acceleration scale value, value range: 1 ~ 100
-    #                 user: Set user coordinate system index
-    #     """
-    #     string = "RelMovLTool({:f},{:f},{:f},{:f},{:f},{:f}, {:d}".format(
-    #         offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool)
-    #     for params in dynParams:
-    #         print(type(params), params)
-    #         string = string + ", SpeedJ={:d}, AccJ={:d}, User={:d}".format(
-    #             params[0], params[1], params[2])
-    #     string = string + ")"
-    #     self.send_data(string)
-    #     return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def RelMovJUser(self, offset_x, offset_y, offset_z, offset_r, user, *dynParams):
         """
@@ -877,8 +728,7 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
             string = string + ","+ str(params)
         string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def RelMovLUser(self, offset_x, offset_y, offset_z, offset_r, user, *dynParams):
         """
@@ -898,8 +748,7 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
             string = string + ","+ str(params)
         string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def RelJointMovJ(self, offset1, offset2, offset3, offset4, *dynParams):
         """
@@ -915,8 +764,7 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
            string = string + ","+ str(params)
         string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
     
     def MovJExt(self, offset1, *dynParams):
         string = "MovJExt({:f}".format(
@@ -924,12 +772,10 @@ class DobotApiMove(DobotApi):
         for params in dynParams:
            string = string + ","+ str(params)
         string = string + ")"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     def SyncAll(self):
         string = "SyncAll()"
-        self.send_data(string)
-        return self.wait_reply()
+        return self.sendRecvMsg(string)
 
     
