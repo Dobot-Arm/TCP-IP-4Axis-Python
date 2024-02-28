@@ -106,6 +106,7 @@ class DobotApi:
         self.ip = ip
         self.port = port
         self.socket_dobot = 0
+        self.__globalLock = threading.Lock()
         self.text_log: Text = None
         if args:
             self.text_log = args[0]
