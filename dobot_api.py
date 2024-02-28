@@ -1,5 +1,5 @@
 import socket
-from threading import Timer
+import threading
 from tkinter import Text, END
 import datetime
 import numpy as np
