@@ -576,8 +576,43 @@ class DobotApiMove(DobotApi):
         print(string)
         return self.sendRecvMsg(string)
 
-    def Jump(self):
-        print("待定")
+    def Jump(self, x, y, z, r, User=None, Tool=None, SpeedL=None, AccL=None, Start=None, End=None, ZLimit=None, auxJoint=None):
+        """
+    调用示例：dobot.Jump(100, 200, 50, 45, User=1, Tool=2, SpeedL=50, AccL=50, Start=10, End=10, ZLimit=80)
+    门型运动指令 (Jump motion)
+    x: X轴位置，单位：毫米
+    y: Y轴位置，单位：毫米
+    z: Z轴位置，单位：毫米
+    r: R轴位置，单位：毫米
+    User: 用户坐标系索引，取值范围：0~9，不填按照上一次设置的值
+    Tool: 工具坐标系索引，取值范围：0~9，不填按照上一次设置的值
+    SpeedL: 笛卡尔速度比例，取值范围：1~100，不填按照上一次设置的值
+    AccL: 笛卡尔加速度比例，取值范围：1~100，不填按照上一次设置的值
+    Start: 门型起始点抬升高度（单位：毫米），不填沿用 Arch() 设置
+    End: 门型结束点下降高度（单位：毫米），不填沿用 Arch() 设置
+    ZLimit: 门型最大抬升高度（单位：毫米），不填沿用 Arch() 设置
+    auxJoint: 滑轨辅助关节值
+    """
+        string = "Jump({:f},{:f},{:f},{:f}".format(x, y, z, r)
+        if User is not None:
+            string = string + ",User={}".format(User)
+        if Tool is not None:
+            string = string + ",Tool={}".format(Tool)
+        if SpeedL is not None:
+            string = string + ",SpeedL={}".format(SpeedL)
+        if AccL is not None:
+            string = string + ",AccL={}".format(AccL)
+        if Start is not None:
+            string = string + ",Start={:f}".format(Start)
+        if End is not None:
+            string = string + ",End={:f}".format(End)
+        if ZLimit is not None:
+            string = string + ",ZLimit={:f}".format(ZLimit)
+        if auxJoint is not None:
+            string = string + ",auxJoint={:f}".format(auxJoint)
+        string = string + ")"
+        print(string)
+        return self.sendRecvMsg(string)
 
     def RelMovJ(self, x, y, z, r, *dynParams):
         """
