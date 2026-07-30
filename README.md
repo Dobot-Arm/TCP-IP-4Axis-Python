@@ -1,92 +1,79 @@
 ---
+
 typora-root-url: ./picture
 ---
 
-English version of the README -> please [click here](./README-EN.md)
+Chinese version of the README -> please [click here](./README.md)
 
-dobot   TCP-IP-4Axis-Python-CMD   二次开发api接口 （ [TCP-IP-MG400-Python English README](https://github.com/Dobot-Arm/TCP-IP-4Axis-Python.git) ）
+Dobot   TCP-IP-4Axis-Python-CMD   secondary development API interface ( [TCP-IP-MG400-Python Chinese README](https://github.com/Dobot-Arm/TCP-IP-4Axis-Python.git) )
 
+# 1\. Introduction
 
+**TCP-IP-4Axis-Python** is a software development kit designed by Dobot based on Python of TCP/IP protocol. It is developed based on Python language, follows the Dobot-TCP-IP control communication protocol, connects to the device terminal via Socket, and provides users with an easy-to-use API interface. Through TCP-IP-4Axis-Python, users can quickly connect to the Dobot device and carry out secondary development to control and use the device.
 
-# 1. 简介
+## Pre-dependency
 
-TCP-IP-4Axis-Python    是为 dobot 公司旗下基于TCP/IP协议的Python的封装设计的软件开发套件。它基于 Python 语言开发，遵循dobot-TCP-IP控制通信协议，通过socket与机器终端进行Tcp连接，  并为用户提供了易用的api接口。通过 TCP-IP-4Axis-Python ，用户可以快速地连接dobot机器并进行二次开发对机器的控制与使用。
-
-
-
-## 前置依赖
-
-* 电脑可用网线连接控制器的网口，然后设置固定 IP，与控制器 IP 在同一网段下。也可无线连接控制器。
-
-  有线连接时连接LAN1：ip为192.168.1.6 , 有线连接时连接LAN2：ip为192.168.2.6,  无线连接：ip为192.168.9.1
-
-*  尝试 ping 通控制器 IP，确保在同一网段下。
-
-* 安装Python环境，Python环境安装请参考  [Python安装指南](https://docs.python.org/zh-cn/3/using/index.html)  
-
-  python环境配置numpy： pip install numpy 
-
-* 此API接口与Demo适用于MG400/M1Pro系列的V1.5.6.0及以上控制器版本
-
+* You can connect your computer to the network interface of the controller with a network cable, and then set the fixed IP to be in the same network segment as the controller IP. You can also connect your computer to the controller via wireless connection.
   
+  When connected to LAN1 via wired connection: IP: 192.168.1.6; <br/>When connected to LAN2 via wired connection: IP: 192.168.2.6; <br/>Wireless connection: IP: 192.168.9.1
+
+* Try pinging the controller IP to make sure it is under the same network segment.
+
+* Setup the Python environment. For details, please refer to [Python Setup and Usage]( https://docs.python.org/3/using/index.html).
+  
+  Python configuration: pip install numpy
+
+* This API interface and Demo are applicable to V1.5.6.0 and above controller version of MG400/M1Pro series
+
+## Version and Release
+
+### Current version V1.0.0.0
+
+| Version| Date|
+|:----------:|:----------:|
+| V1.0.0.0| 2023-03-07 |
+
+# 2\. Technical support
 
 
-##  版本和发布记录
+# 3\. TCP-IP-4Axis-Python control protocol
 
-###  当前版本 v1.0.0.0
+As the communication based on TCP/IP has high reliability, strong practicability and high performance with low cost, many industrial automation projects have a wide demand for controlling robots based on TCP/IP protocol. Therefore, the MG400/M1Pro robot is designed to provide rich interfaces for interaction with external devices based on the TCP/IP protocol. For more details, see [TCP_IP Remote Control Interface Guide (4axis)](https://github.com/Dobot-Arm/TCP-IP-Protocol.git).
 
-|   版本   |  修改日期  |
-| :------: | :--------: |
-| v1.0.0.0 | 2023-10-20 |
+# 4\. Obtaining TCP-IP-4Axis-Python
 
-
-
-# 2. 技术支持
-
-
-
-# 3.TCP-IP-4Axis-Python 控制协议
-
-由于基于TCP/IP的通讯具有成本低、可靠性高、实用性强、性能高等特点；许多工业自动化项目对支持TCP/IP协议控制机器人需求广泛，因此MG400/M1Pro机器人将设计在TCP/IP协议的基础上，提供了丰富的接口用于与外部设备的交互；有关协议更详细的信息请查阅**[《越疆TCPIP控制协议文档4AXis》](https://github.com/Dobot-Arm/TCP-IP-Protocol.git)**
-
-
-
-# 4. 获取TCP-IP-4Axis-Python 
-
-1. 从GitHub 下载或者克隆dobot  TCP-IP-4Axis-Python-CMD 二次开发api程序
-
+1. Obtain the secondary development API program of Dobot TCP-IP-4Axis-Python-CMD from GitHub.
+  
    ```bash
    `git clone https://github.com/Dobot-Arm/TCP-IP-4Axis-Python.git
    ```
 
-2.  参考对应的 README.md 文档使用；
+2. Refer to the corresponding README.md file for use.
 
-   
+# 5\. File and class descriptions
 
-# 5. 文件类的说明以及使用方法
+1. main.py: The running entrance of the main program.
 
-1. main.py: 主程序运行入口。  
+2. dobot_api.py: encapsulate the robot interface. For details, refer to the TCP_IP Remote Control Interface Guide (https://github.com/Dobot-Arm/TCP-IP-Protocol).
 
-2. dobot_api.py：封装机器人接口，具体Api指令用法根据机器人TCP/IP远程控制方案（https://github.com/Dobot-Arm/TCP-IP-Protocol）自行参考和使用。
+3. files: Files related to the alarm ID, `alarm_controller.json`: Warning alarm profile, `alarm_servo.json`: Servo alarm profile
 
-3. files：存放报警ID相关信息 , `alarm_controller.json`警告报警配置文件,`alarm_servo.json`伺服报警配置文件
+4. PythonExample.py: Contains usage and code examples of some API interface commands.
 
-4. PythonExample.py :   包含一些api接口指令的用法和代码示例来参考
+**Class descriptions:**
 
-dobot_api目录中的类说明：
+| Class| Define|
+|----------|----------|
+| DobotApi| Interface class based on TCP communication, encapsulates the basic business of communication|
+| DobotApiDashboard| Inherited from DobotClient, it implements the specific basic functions of the robot|
+| DobotApiMove| Inherited from DobotClient, it implements the specific motion functions of the robot|
+| MyType| Data type, it feeds back the robot status list|
+| alarm_controller| Warning alarm configuration information|
+| alarm_servo| Servo alarm configuration information|
 
-| Class             | Define                                        |
-| ----------------- | --------------------------------------------- |
-| DobotApi          | 基于tcp通信的接口类，封装了通信的基础业务     |
-| DobotApiDashboard | 继承于DobotClient，实现了具体的机器人基本功能 |
-| DobotApiMove      | 继承于DobotClient，实现了具体的机器人运动功能 |
-| MyType            | 数据类型对象，反馈机器人的状态列表            |
-| alarm_controller  | 警告报警配置信息                              |
-| alarm_servo       | 伺服报警配置信息                              |
+**DobotApi**
 
-**DobotApi**  
-
- 基于tcp通信的接口类，提供对机器的tcp连接，关闭，获取ip，端口等功能， 封装了通信的基础业务。
+Interface class based on TCP communication, encapsulates the basic business of communication.
 
 ```python
 class DobotApi:
@@ -99,9 +86,9 @@ class DobotApi:
     ""        
 ```
 
-**DobotApiDashboard**  
+**DobotApiDashboard**
 
-   继承于DobotClient，  能发送一些设置相关的控制指令给机器人。实现了具体的机器人基本功能。  
+Inherited from DobotClient, it can deliver some settings-related commands to the robot. It implements the specific basic functions of the robot.
 
 ```c++
 class DobotApiDashboard(DobotApi):
@@ -112,9 +99,9 @@ class DobotApiDashboard(DobotApi):
       """
 ```
 
-**DobotApiMove**  
+**DobotApiMove**
 
-继承于DobotClient， 能发送一些运动相关的运动指令给机器人，实现了具体的机器人运动功能。  
+Inherited from DobotClient, it can deliver some motion-related commands to the robot. It implements the specific motion functions of the robot.
 
 ```python
 class DobotApiMove(DobotApi):
@@ -127,37 +114,35 @@ class DobotApiMove(DobotApi):
 
 **MyType**
 
-数据类型对象，能反馈机器人的状态信息。
+Data type, it feeds back the robot status.
 
 ```c++
 MyType=np.dtype([('len', np.int16, ), 
                 ('Reserve', np.int16, (3,) ),
 ```
 
-
-
-分别创建控制类端口对象 ，运动类端口对象，反馈类端口对象，进行Tcp连接
+Create control port, motion port, and feedback port respectively for TCP connection.
 
 ```python
     ip = "192.168.1.6"
     dashboardPort = 29999
     movePort = 30003
     feedPort = 30004
-    print("正在建立连接...")
+    print("Connecting...")
     dashboard = DobotApiDashboard(ip, dashboardPort)
     move = DobotApiMove(ip, movePort)
     feed = DobotApi(ip, feedPort)
     
 ```
 
-使用控制端口下发控制指令信息，进行使能，下使能操作
+Deliver control commands via control port to enable or disable the robot.
 
 ```python
      dashboard.EnableRobot()
      dashboard.DisableRobot()
 ```
 
-使用运动端口下发运行指令信息，控制机器运动
+Deliver motion commands via motion port to control the motion of the robot.
 
 ```python
     x=10
@@ -168,7 +153,7 @@ MyType=np.dtype([('len', np.int16, ),
     move.MovJ(x,y,z,r)
 ```
 
-通过反馈端口获取机器状态
+Get the robot status via the feedback port.
 
 ```python
     data = bytes()
@@ -180,106 +165,83 @@ MyType=np.dtype([('len', np.int16, ),
     hasRead = 0
     feedInfo = np.frombuffer(data, dtype=MyType)
     if hex((feedInfo['test_value'][0])) == '0x123456789abcdef':
-        print(feedInfo['EnableStatus'][0])   #输出机器使能状态
+        print(feedInfo['EnableStatus'][0])   #Output device enabling status
 ```
 
-   **具体使用详情请查看代码示例PythonExample.py和Demo示例**
+**For details, see the PythonExample.py and the Demo example.**
 
+# 6\. Common problem
 
+**Problem 1:**  TCP connection. Port 29999/30003 cannot be connected or cannot deliver commands after connecting.
 
-# 6. 常见问题
+**Solution:**  If the controller version is below V1.6.0.0, you can try to upgrade the controller to V1.6.0.0 or above. If the controller version is already V1.6.0.0 or above, you can feedback the problem to technical support.
 
-问题一：  Tcp连接  29999/30003端口无法连接或者连接后无法下发指令
+**Problem 2:** During TCP connection, the 29999 control port can send commands, but the 30003 motion port cannot send commands.
 
- 解决方法：  如控制器版本是1.6.0.0版本以下，可尝试升级控制器为1.6.0.0版本及以上版本。 如机器已经是1.6.0.0版本及以上，可将问题现象和操作反馈给技术支持
+**Solution:**  If motion queue is blocked, you can try to reopen the queue by delivering **clearerror()** and **continue()** commands via port 29999.
 
+**Problem 3:** How to judge whether the robot motion command is in place or not
 
+**Solution:**  It can be judged by delivering a sync command.
 
-问题二： Tcp连接过程中  29999控制端口能发送指令，30003运动端口发送不了指令
+It can be judged by comparing the Cartesian coordinates of the target point with the actual Cartesian coordinates of the robot.
 
- 解决方法：  运动队列被堵塞，尝试用29999端口下发clearerror()和 continue()指令来重新开启队列
+# 7\. Example
 
+* Dobot-Demo realizes TCP control of the robot and other interactions. It connects to the control port, motion port, and feedback port of the robot respectively. It delivers motion commands to robot, and handles the abnormal status of the robot, etc.
 
+1. Main thread: Connect to the control port, motion port, and feedback port of the robot respectively. Enable the robot.
 
-问题三：怎么判断机器运动指令是否到位
+![](/main_en.png)
 
-解决方法：  可通过下发sync指令来判断机器运动指令是否到位
+2. Feedback status thread: Real-time feedback of robot status information.
 
-​                     可通过对比目标点位笛卡尔坐标值和机器实际笛卡尔坐标值来判断是否到位
+![](/feed_en.png)
 
+3. Robot motion thread: Deliver motion commands to robot.
 
+![](/move_en.png)
 
-# 7. 示例
+4. Exception handling thread: Judge and handle the abnormal status of the robot.
 
-* Dobot-Demo 实现Tcp对机器的控制等交互，分别对控制端口，运动端口，反馈端口进行tcp连接，通过机器运动指令完成状态来进行下发指令，且对机器异常状态进行处理等功能。
+![](/excetion_en.png)
 
+**Steps to run the Demo:**
+
+1. Obtain the secondary development API program of Dobot TCP-IP-4Axis-Python-CMD from GitHub.
   
-
-1.  主线程：分别对机器控制端口，运动端口，反馈端口进行连接。给机器使能，MovL移动指令等动作
-
-![](/main.png)
-
-2.  反馈状态线程：实时反馈机器的状态信息
-
-![](/feed.png)
-
-3. 机器运动线程： 给机器下发运动指令
-
-![](/move.png)
-
-4.  异常处理线程：对机器异常状态进行判断和处理动作
-
-![](/excetion.png)
-
-**Demo运行的操作步骤时序如下图所示 ：**
-
-1. 从GitHub 获取越疆dobot  TCP-IP-4Axis-Python-CMD  二次开发Api程序
-
    ```bash
    `git clone https://github.com/Dobot-Arm/TCP-IP-4Axis-Python.git
    ```
 
-2. 通过LAN1网口-连接机器端，设置本机机器IP地址为192.168.1.X  网段
-
-   控制面板>>网络>> Internet>>网络连接  
-
-   ![](/netConnect.png)
-
+2. Connect to the robot via LAN1 interface, and set the local IP address to 192.168.1.X.
+  
+   Control Panel >> Network and Internet >> Network Connections.
    
-
-   选择连接的以太网  >>  点击右键  >> 属性  >>   Internet协议版本(TCP/IPV4)
-
-   修改ip地址为192.168.1.X网段IP
-
-   ![](/updateIP.png)
-
+   ![](/netConnect_en.png)
    
-
-3. 连接上位机DobotStudio Pro，连接机器，把机器模式切换至TCP/IP模式
-
-   ![](/checkTcpMode.png)
-
+   Select the connected Ethernet >> Right click >> Properties >> Internet Protocol Version (TCP/IPV4).
    
+   Modify the IP address to 192.168.1.X.
+   
+   ![](/updateIP_en.png)
 
-4. 运行程序，需要检测搜索到动态库，在VsCode/PyCharm中打开整个目录，直接运行 main.py。  
+3. Open the DobotStudio Pro, connect to the robot, and set the robot mode to **TCP/IP secondary development**.
+  
+   ![](/checkTcpMode_en.png)
 
+4. To run the program, you need to detect the dynamic library, open the whole directory in VsCode/PyCharm and run main.py directly.
+  
    ![](/runpy.png)
 
-   
+**Common problem**
 
-  **常见问题：**
+**Problem 1: ModuleNotFoundError :  Nomode name 'numpy'**
 
-​     **问题一： ModuleNotFoundError :  Nomode name 'numpy'**
+**Solution:** If the numpy environment is not installed, install numpy      pip install numpy.
 
-​    解决方法： 未安装numpy环境，  安装numpy      pip install numpy。
+**Problem 2: Cartesian coordinates of different models (MG400/M1pro) in Demo**
 
-   
+**Solution:** Confirm the Cartesian coordinates of the model and modify the coordinates in Demo.
 
-​    **问题二： Demo中 不同机型（MG400/M1pro）对应的笛卡尔坐标**
-
-​     解决方法： 确认机型对应的笛卡尔坐标，修改Demo 坐标值。
-
-
-
-**运行示例前请确保机器处于安全位置，防止机器发生不必要的碰撞**
-
+**Make sure the robot is in a safe position before running the Demo to prevent unnecessary collisions**
