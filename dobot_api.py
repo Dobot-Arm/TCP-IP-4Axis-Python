@@ -246,7 +246,8 @@ class DobotApiDashboard(DobotApi):
         string = "RobotMode()"
         return self.sendRecvMsg(string)
 
-    def PayLoad(self, weight, inertia):
+    # Change Name PayLoad -> SetPayload
+    def SetPayLoad(self, weight, inertia):
         """
     Setting robot load
     weight : The load weight
@@ -416,13 +417,14 @@ class DobotApiDashboard(DobotApi):
         string = "SetArmOrientation({:d}".format(offset1) + ")"
         return self.sendRecvMsg(string)
 
-    def SetPayload(self, offset1, *dynParams):
-        string = "SetPayload({:f}".format(
-            offset1)
-        for params in dynParams:
-            string = string + "," + str(params) + ","
-        string = string + ")"
-        return self.sendRecvMsg(string)
+    # Delete?
+    # def SetPayload(self, offset1, *dynParams):
+    #     string = "SetPayload({:f}".format(
+    #         offset1)
+    #     for params in dynParams:
+    #         string = string + "," + str(params) + ","
+    #     string = string + ")"
+    #     return self.sendRecvMsg(string)
 
     def PositiveSolution(self, offset1, offset2, offset3, offset4, user, tool):
         string = "PositiveSolution({:f},{:f},{:f},{:f},{:d},{:d}".format(offset1, offset2, offset3, offset4, user,
